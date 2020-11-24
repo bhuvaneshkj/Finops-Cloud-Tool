@@ -1,0 +1,13 @@
+policies:
+  - name: c7n-mailer-test
+    resource: sqs
+    actions:
+      - type: notify
+        template: default
+        priority_header: '2'
+        subject: testing the c7n mailer
+        to:
+          - chat2bhuvanesh@gmail.com
+        transport:
+          type: sqs
+          queue: https://sqs.us-east-2.amazonaws.com/621284829458/c7nMailer
