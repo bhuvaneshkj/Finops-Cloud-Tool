@@ -1,0 +1,13 @@
+#aws.rds-snapshots:
+#age: Filters RDS snapshots which are of 25 days 
+policies:
+  - name: rds-snapshot-expired
+    resource: rds-snapshot
+    filters:
+      - type: age
+        days: 25
+        op: ge
+    actions:
+      - delete
+
+
