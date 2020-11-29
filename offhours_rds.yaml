@@ -1,0 +1,15 @@
+#RDS off- hours
+
+policies:
+  - name: offhours-stop
+    resource: rds
+    filters:
+      - type: offhour
+        weekends: false
+        default_tz: est
+        tag: downtime
+        opt-out: true
+        onhour: 10
+        offhour: 21
+  actions:
+  stop
