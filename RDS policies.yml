@@ -1,0 +1,65 @@
+#This Yaml File contains executable RDS policy codes 
+#aws.rds 
+#db-parameter: Applies value type filter on set db parameter values.
+policies:
+  - name: rds-pg
+    resource: rds
+    filters:
+      - type: db-parameter
+        key: someparam
+        op: eq
+        value: someval
+#default-vpc: Matches if an rds database in the default vpc
+#policies:
+  - name: default-vpc-rds
+    resource: rds
+    filters:
+      - type: default-vpc
+
+#aws.rds-cluster 
+#ops-item : Filter resources associated to extant OpsCenter operational items. 
+  #policies:
+  - name: ec2-instances-ops-items
+    resource: ec2
+    filters:
+      - type: ops-item
+        # we can filter on source, title, priority
+        priority: [1, 2]
+
+#aws.rds-snapshots:
+#age: Filters RDS snapshots based on age (in days)
+#policies:
+  - name: rds-snapshot-expired
+    resource: rds-snapshot
+    filters:
+      - type: age
+        days: 28
+        op: ge
+    actions:
+      - delete
+
+
+#aws-rds subnet group
+#unused: Filters all the unused groups
+#policies:
+  - name: rds-subnet-group-delete-unused
+    resource: rds-subnet-group
+    filters:
+      - unused
+
+
+##USER DEFINED
+#RDS off- hours
+#policies:
+  - name: offhours-stop
+    resource: rds
+    filters:
+      - type: offhour
+        weekends: false
+        default_tz: est
+        tag: downtime
+        opt-out: true
+        onhour: 10
+        offhour: 21
+  actions:
+  stop
