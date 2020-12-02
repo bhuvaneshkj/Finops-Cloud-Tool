@@ -1,0 +1,81 @@
+#YAML File containing executable S3 policies
+
+#aws.S3
+#Bucket Encryption: Filters for S3 buckets that have bucket-encryption
+policies:
+  - name: s3-bucket-encryption-AES256
+    resource: s3
+    region: us-east-1
+    filters:
+      - type: bucket-encryption
+        state: True
+        crypto: AES256
+  - name: s3-bucket-encryption-KMS
+    resource: s3
+    region: us-east-1
+    filters:
+      - type: bucket-encryption
+        state: True
+        crypto: aws:kms
+        key: alias/some/alias/key
+  - name: s3-bucket-encryption-off
+    resource: s3
+    region: us-east-1
+    filters:
+      - type: bucket-encryption
+        state: False
+
+
+#Bucket Logging: Filters based on bucket logging Configuration
+#policies:
+  - name: add-bucket-logging-if-missing
+    resource: s3
+    filters:
+      - type: bucket-logging
+        op: disabled
+    actions:
+      - type: toggle-logging
+        target_bucket: "{account_id}-{region}-s3-logs"
+        target_prefix: "{source_bucket_name}/"
+
+#policies:
+  - name: update-incorrect-or-missing-logging
+    resource: s3
+    filters:
+      - type: bucket-logging
+        op: not-equal
+        target_bucket: "{account_id}-{region}-s3-logs"
+        target_prefix: "{account}/{source_bucket_name}/"
+    actions:
+      - type: toggle-logging
+        target_bucket: "{account_id}-{region}-s3-logs"
+        target_prefix: "{account}/{source_bucket_name}/"
+
+
+#Cross Account: Filter cross-account access to S3 Buckets 
+#policies:
+  - name: s3-acl
+    resource: s3
+    region: us-east-1
+    filters:
+      - type: cross-account
+
+#global grants: Filters all the S3 buckets which have global grants.
+#policies:
+  - name: remove-global-grants
+    resource: s3
+    filters:
+     - type: global-grants
+       allow_website: false
+    actions:
+     - delete-global-grants
+
+#Missing policy statement: Find buckets missing a set of named policy statement 
+#policies:
+  - name: s3-bucket-missing-statement
+    resource: s3
+    filters:
+      - type: missing-statement
+        statement_ids:
+          - RequiredEncryptedPutObject
+
