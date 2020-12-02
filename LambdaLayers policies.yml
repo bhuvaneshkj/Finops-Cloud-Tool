@@ -1,0 +1,31 @@
+#Lambda Layer
+#Note custodian models the lambda layer version.
+#Layers end up being a logical asset, the physical asset for use and management is the layer verison.
+#To ease that distinction, we support querying just the latest layer version or having a policy against all layer versions.
+policies:
+  - name: lambda-layer
+    resource: lambda
+    query:
+      - version: latest
+
+#Other general policies covered by lambda:
+#Aws-config
+  - name: s3-check
+    resource: aws.s3
+    filters:
+      - type: iam-analyzer
+        key: isPublic
+        value: true
+
+
+
+#Ops-items
+#policies:
+  - name: ec2-instances-ops-items
+    resource: ec2
+    filters:
+      - type: ops-item
+        # we can filter on source, title, priority
+        priority: [1, 2]
+
+
