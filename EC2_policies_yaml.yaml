@@ -1,0 +1,146 @@
+#Yaml File Containing executable EC2 policies 
+
+###aws.key-pair 
+#unused key-pair: Filter for used or unused keys.
+policies:
+  - name: unused-key-pairs
+    resource: aws.key-pair
+    filters:
+      - unused
+  - name: used-key-pairs
+    resource: aws.key-pair
+    filters:
+      - type: unused
+        state: false
+
+
+###ec2.eni 
+#Flow Logs- #efault vpc: This will filter that returns any security group that exists with the default vpc
+#policies:
+  - name: flow-logs-enabled
+    resource: vpc
+    filters:
+      - flow-logs
+
+#To find all flow logs but don't match a particular configuration
+#policies:
+  - name: flow-mis-configured
+    resource: vpc
+    filters:
+      - not:
+        - type: flow-logs
+          enabled: true
+          set-op: or
+          op: equal
+          # equality operator applies to following keys
+          traffic-type: all
+          status: active
+          log-group: vpc-logs
+
+
+###ec2.network-acl 
+#Find all nacls that do not allow communication with s3.
+#policies:
+  - name: s3-not-allowed-nacl
+    resource: network-acl
+    filters:
+      - s3-cidr
+
+      
+
+
+
+#EC2 Resources
+# Security Group Filters for EC2
+# aws.security-group
+
+
+
+
+#efault vpc: This will filter that returns any security group that exists with the default vpc
+#policies:
+  - name: security-group-default-vpc
+    resource: security-group
+    filters:
+      - default-vpc
+
+#config-compliance : Filter resources by their compliance with one or more AWS config rules.
+#policies:
+  - name: non-compliant-ec2
+    resource: ec2
+    filters:
+     - type: config-compliance
+       eval_filters:
+        - type: value
+          key: ResultRecordedTime
+          value_type: age
+          value: 30
+          op: less-than
+       rules:
+        - custodian-ec2-encryption-required
+        - custodian-ec2-tags-required
+
+#image: Filter asg by image 
+#policies:
+  - name: non-windows-asg
+    resource: asg
+    filters:
+      - type: image
+        key: Platform
+        value: Windows
+        op: ne
+
+#reduce: Generic reduce filter to group, sort, and limit your resources.
+- name: oldest-instance-by-asg
+  resource: ec2
+  filters:
+    - "tag:aws:autoscaling:groupName": present
+    - type: reduce
+      group-by: "tag:aws:autoscaling:groupName"
+      sort-by: "LaunchTime"
+      order: asc
+      limit: 1
+
+# logging : Checks Redshift Logging status and attributes 
+ #    policies:
+
+    - name: redshift-logging-bucket-and-prefix-test
+      resource: redshift
+      filters:
+       - type: logging
+         key: LoggingEnabled
+         value: true
+       - type: logging
+         key: S3KeyPrefix
+         value: "accounts/{account_id}"
+       - type: logging
+         key: BucketName
+         value: "redshiftlogs"
+
+#USER DEFINED POLICIES 
+###aws.key-pair 
+
+#unused key-pair: Filter for unused key pairs for the running instances
+#policies:
+  - name: unused-key-pairs
+    resource: aws.key-pair
+    filters:
+      - unused
+  query:
+  - instance-state-name: running
+  actions:
+  - stop      
+
+
+###aws.key-pair 
+#unused key-pair: Filter for used key pairs for the running instances
+#policies:
+  - name: used-key-pairs
+    resource: aws.key-pair
+    filters:
+      - type: unused
+        state: false
+  query:
+  - instance-state-name: running
+  actions:
+  - stop
